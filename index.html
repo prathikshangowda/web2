@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAPTCHA Registration Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 20px;
+      background-color: #dbb738;
+    }
+    form {
+      max-width: 350px;
+      margin: auto;
+      background: #c1b363;
+      padding: 40px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="text"], input[type="email"], input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    .captcha-box {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .captcha {
+      font-size: 24px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      color: #333;
+      padding: 10px;
+      background: #e4e4e4;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      flex-grow: 1;
+      text-align: center;
+    }
+    .refresh-captcha {
+      cursor: pointer;
+      margin-left: 10px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    .refresh-captcha:hover {
+      background: #0056b3;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #28a745;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #218838;
+    }
+    .error, .success {
+      margin-top: 10px;
+      font-size: 14px;
+      text-align: center;
+    }
+    .error {
+      color: #dc3545;
+    }
+    .success {
+      color: #28a745;
+    }
+    h1{
+        text-align:center;
+    }
+    .registered-users {
+      margin-top: 30px;
+      text-align: center;
+    }
+    .registered-users ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    .registered-users li {
+      background: #f4f4f4;
+      padding: 10px;
+      margin-bottom: 5px;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <form id="registrationForm">
+    <div class="form-group">
+      <h1>Captcha Registration form</h1>
+      <label for="name">Name</label>
+      <input type="text" id="name" placeholder="Enter your name" required>
+    </div>
+    <div class="form-group">
+      <label for="email">Email ID</label>
+      <input type="email" id="email" placeholder="Enter your email" required>
+    </div>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Enter your password" required>
+    </div>
+    <div class="captcha-box">
+      <div id="captcha" class="captcha"></div>
+      <button type="button" class="refresh-captcha" onclick="generateCaptcha()">↻ Refresh</button>
+    </div>
+    <div class="form-group">
+      <label for="captchaInput">Enter CAPTCHA</label>
+      <input type="text" id="captchaInput" placeholder="Enter CAPTCHA" required>
+    </div>
+    <button type="submit">Register</button>
+    <div id="feedback" class="error"></div>
+  </form>
+
+  <!-- Section to display registered users -->
+  <div class="registered-users">
+    <h2>Registered Users</h2>
+    <ul id="userList"></ul>
+  </div>
+
+  <script>
+    let captchaCode = '';
+    const registeredUsers = [];
+
+    // Function to generate a random CAPTCHA
+    function generateCaptcha() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      captchaCode = '';
+      for (let i = 0; i < 6; i++) {
+        captchaCode += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      document.getElementById('captcha').innerText = captchaCode;
+    }
+
+    // Function to update the user list after registration
+    function updateUserList() {
+      const userList = document.getElementById('userList');
+      userList.innerHTML = ''; // Clear current list
+      registeredUsers.forEach(user => {
+        const li = document.createElement('li');
+        li.textContent = user.name; // Show only the name
+        userList.appendChild(li);
+      });
+    }
+
+    // Validate the form and CAPTCHA on submission
+    document.getElementById('registrationForm').addEventListener('submit', function (e) {
+      e.preventDefault(); // Prevent actual form submission
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const userCaptcha = document.getElementById('captchaInput').value.trim();
+
+      const feedback = document.getElementById('feedback');
+
+      if (userCaptcha === captchaCode) {
+        // Save the user to the registered users array
+        registeredUsers.push({ name, email, password });
+        
+        feedback.className = 'success';
+        feedback.innerText = 'Registration successful!';
+
+        // Update the user list display
+        updateUserList();
+        
+        // Optionally, log the user details to the console
+        console.log('User Details:');
+        console.log('Name:', name);
+        console.log('Email:', email);
+        console.log('Password:', password);
+
+        // Reset the form
+        document.getElementById('registrationForm').reset();
+        generateCaptcha(); // Refresh CAPTCHA
+      } else {
+        feedback.className = 'error';
+        feedback.innerText = 'Invalid CAPTCHA. Please try again.';
+      }
+    });
+
+    // Generate the first CAPTCHA on page load
+    generateCaptcha();
+  </script>
+
+</body>
+</html>
+
